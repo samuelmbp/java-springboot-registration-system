@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 public class RegistrationService {
     private final EmailValidator emailValidator;
     private final AppUserService appUserService;
-    private final ConfirmationToken confirmationToken;
     private final ConfirmationTokenService confirmationTokenService;
 
     public String register(RegistrationRequest request) {
@@ -35,5 +34,28 @@ public class RegistrationService {
                         AppUserRole.USER
                 )
         );
+    }
+
+    @Transactional
+    public String confirmToken(String token) {
+        ConfirmationToken confirmationToken = confirmationTokenService
+                .getToken(token)
+                .orElseThrow(() ->
+                        new IllegalStateException("Token not found."));
+
+        if (confirmationToken.getConfirmedAt() != null) {
+            throw new IllegalStateException("Email already confirmed.");
+        }
+
+        LocalDateTime expiredAt = confirmationToken.getExpiresAt();
+
+        if (expiredAt.isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("Token expired.");
+        }
+
+        confirmationTokenService.setConfirmedAt(token);
+        appUserService.enableAppUser(
+                confirmationToken.getAppUser().getEmail());
+        return "Token Confirmed.";
     }
 }
