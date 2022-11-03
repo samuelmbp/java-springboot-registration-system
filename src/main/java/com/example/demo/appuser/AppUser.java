@@ -12,12 +12,11 @@ import javax.persistence.*;
 import java.util.Collection;
 import java.util.Collections;
 
-// Lombok
 @Getter
 @Setter
 @EqualsAndHashCode
 @NoArgsConstructor
-@Entity // Table
+@Entity
 public class AppUser implements UserDetails {
     @SequenceGenerator(
             name= "student_sequence",
